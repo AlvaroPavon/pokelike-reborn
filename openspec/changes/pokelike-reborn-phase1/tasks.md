@@ -42,3 +42,28 @@
 - [x] 7.6 Create BattleField component (two-sided battle with HP bars, log, victory/defeat)
 - [x] 7.7 Create components/index.ts barrel file
 - [x] 7.8 Add vitest config, test setup, and component tests
+
+## Phase 9: Complete Game Screens (PR 9)
+
+- [x] 9.1 Create game helpers (packages/frontend/src/game/helpers.ts) with battle sim, encounters, map gen
+- [x] 9.2 Implement full TitleScreen with logo, Continue check, Nuzlocke/Battle Tower buttons
+- [x] 9.3 Implement full TrainerSelectScreen with CSS pixel art sprites
+- [x] 9.4 Implement full StarterSelectScreen with 3 Kanto starters
+- [x] 9.5 Implement full MapScreen with MapView, TeamPanel, ItemBar, node resolution
+- [x] 9.6 Implement full BattleScreen with auto-battle, log streaming, XP/evolution
+- [x] 9.7 Implement full CatchScreen with swap modal for full teams
+- [x] 9.8 Implement full ItemScreen with item cards and descriptions
+- [x] 9.9 Implement full GameOverScreen with stats and final team display
+- [x] 9.10 Implement full WinScreen with Battle Tower unlock
+- [x] 9.11 Update App router with screen transition animations
+- [x] 9.12 Extend uiStore with transient battle/catch/item data
+- [x] 9.13 Add pulse and attackFlash CSS animations
+
+## Phase 10: Persistence System (PR 10)
+
+- [x] 10.1 Create Save/Load utilities (packages/frontend/src/utils/saveLoad.ts) with SaveManager, SaveData, GameSettings types
+- [x] 10.2 Implement save schema with versioning (SAVE_VERSION = 1), validateSaveData, migrateSaveData, MIN_COMPATIBLE_VERSION
+- [x] 10.3 Create auto-save integration (packages/frontend/src/stores/autoSave.ts) with debounced subscription to game store changes
+- [x] 10.4 Add Continue button to title screen (TitleScreen.tsx) — enabled when SaveManager.hasSave() returns true, loads and hydrates store on click
+- [x] 10.5 Create Hall of Fame (packages/frontend/src/utils/hallOfFame.ts) — addHallOfFameEntry, getHallOfFame, getRunNumber, peekRunNumber
+- [x] 10.6 Create Pokédex (packages/frontend/src/utils/pokedex.ts) — markCaught, markSeen, getPokedex, isPokedexComplete, getCaughtCount
