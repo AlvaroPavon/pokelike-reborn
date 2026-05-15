@@ -9,3 +9,4 @@
 
 export * from "./types/index.js";
 export * from "./utils/prng.js";
+export * from "./data/typeChart.js";
