@@ -1,0 +1,505 @@
+/* ─── CSS Custom Properties ──────────────────────────────────────────────── */
+
+:root {
+  /* Retro palette */
+  --color-bg-dark: #0f0f23;
+  --color-bg-mid: #1a1a2e;
+  --color-bg-light: #16213e;
+  --color-gold: #e2b714;
+  --color-gold-light: #f5d742;
+  --color-gold-dim: #b8940f;
+  --color-text-primary: #e0e0e0;
+  --color-text-secondary: #a0a0b0;
+  --color-text-dim: #606070;
+  --color-accent-red: #e74c3c;
+  --color-accent-green: #2ecc71;
+  --color-accent-blue: #3498db;
+  --color-accent-purple: #9b59b6;
+  --color-hp-bar: #2ecc71;
+  --color-hp-bar-low: #e74c3c;
+  --color-overlay: rgba(0, 0, 0, 0.7);
+
+  /* Typography */
+  --font-pixel: "Press Start 2P", monospace, system-ui;
+  --font-ui: "Press Start 2P", monospace, system-ui;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* Sizing */
+  --screen-max-width: 480px;
+  --button-height: 48px;
+  --hud-height: 64px;
+
+  /* Transitions */
+  --transition-screen: opacity 0.3s ease-in-out;
+  --transition-hover: background-color 0.15s ease;
+
+  /* Shadows */
+  --shadow-pixel: 3px 3px 0px rgba(0, 0, 0, 0.4);
+  --shadow-pixel-gold: 3px 3px 0px rgba(184, 148, 15, 0.5);
+}
+
+/* ─── Reset ───────────────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-pixel);
+  background-color: var(--color-bg-dark);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  /* Pixel-art aesthetic: no anti-aliasing for crisp edges */
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+#root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── App Shell ──────────────────────────────────────────────────────────── */
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  max-width: var(--screen-max-width);
+  width: 100%;
+  margin: 0 auto;
+  min-height: 100dvh;
+}
+
+/* ─── Screens ────────────────────────────────────────────────────────────── */
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  animation: screenFadeIn 0.3s ease-in-out;
+  padding: var(--space-md);
+}
+
+@keyframes screenFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes screenFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.screen-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: var(--space-lg);
+}
+
+.screen-title {
+  font-size: 1rem;
+  color: var(--color-gold);
+  text-transform: uppercase;
+  text-align: center;
+  letter-spacing: 2px;
+  text-shadow: var(--shadow-pixel-gold);
+}
+
+/* ─── Game Title ─────────────────────────────────────────────────────────── */
+
+.game-title {
+  font-size: 1.5rem;
+  color: var(--color-gold);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  line-height: 1.4;
+  text-shadow: var(--shadow-pixel-gold);
+  margin-bottom: var(--space-sm);
+}
+
+.subtitle {
+  font-size: 0.6rem;
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-bottom: var(--space-lg);
+}
+
+/* ─── Pixel Buttons ──────────────────────────────────────────────────────── */
+
+.pixel-button {
+  font-family: var(--font-pixel);
+  font-size: 0.65rem;
+  background-color: var(--color-bg-mid);
+  color: var(--color-text-primary);
+  border: 2px solid var(--color-gold-dim);
+  padding: var(--space-sm) var(--space-lg);
+  min-height: var(--button-height);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: var(--transition-hover);
+  box-shadow: var(--shadow-pixel);
+  /* Pixel-art sharp edges */
+  border-radius: 0;
+  outline: none;
+  width: 100%;
+  max-width: 280px;
+}
+
+.pixel-button:hover:not(:disabled) {
+  background-color: var(--color-gold-dim);
+  border-color: var(--color-gold);
+  color: var(--color-bg-dark);
+}
+
+.pixel-button:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.4);
+}
+
+.pixel-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pixel-button:focus-visible {
+  outline: 2px solid var(--color-gold-light);
+  outline-offset: 2px;
+}
+
+/* ─── Menu Options ───────────────────────────────────────────────────────── */
+
+.menu-options {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  width: 100%;
+}
+
+/* ─── Trainer Select ─────────────────────────────────────────────────────── */
+
+.trainer-options {
+  display: flex;
+  gap: var(--space-lg);
+  justify-content: center;
+}
+
+.trainer-card {
+  width: 120px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trainer-sprite {
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+/* ─── Starter Select ─────────────────────────────────────────────────────── */
+
+.starter-options {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.starter-card {
+  width: 130px;
+  height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.pokemon-sprite {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pokemon-name {
+  font-size: 0.55rem;
+  color: var(--color-text-secondary);
+}
+
+/* ─── Placeholder ────────────────────────────────────────────────────────── */
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg-light);
+  border: 2px dashed var(--color-text-dim);
+  padding: var(--space-lg);
+  text-align: center;
+  color: var(--color-text-dim);
+  font-size: 0.6rem;
+  width: 100%;
+  min-height: 100px;
+}
+
+/* ─── Map Screen ─────────────────────────────────────────────────────────── */
+
+.map-container {
+  flex: 1;
+  width: 100%;
+  min-height: 300px;
+}
+
+.hud-bottom {
+  display: flex;
+  gap: var(--space-xs);
+  padding: var(--space-sm) 0;
+  width: 100%;
+}
+
+.team-summary,
+.items-summary,
+.badges-summary {
+  flex: 1;
+  min-height: 50px;
+}
+
+/* ─── Battle Screen ──────────────────────────────────────────────────────── */
+
+.battle-scene {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
+}
+
+.enemy-area,
+.player-area {
+  flex: 1;
+  min-height: 120px;
+}
+
+.battle-hud {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.battle-log {
+  min-height: 60px;
+  font-size: 0.5rem;
+}
+
+.battle-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xs);
+}
+
+.battle-actions .pixel-button {
+  max-width: none;
+  font-size: 0.55rem;
+}
+
+/* ─── Catch Screen ───────────────────────────────────────────────────────── */
+
+.wild-pokemon-area {
+  min-height: 200px;
+}
+
+.catch-actions {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+}
+
+/* ─── Item Screen ────────────────────────────────────────────────────────── */
+
+.inventory-list {
+  flex: 1;
+  width: 100%;
+  min-height: 200px;
+}
+
+.back-button {
+  max-width: 200px;
+}
+
+/* ─── Game Over / Win ────────────────────────────────────────────────────── */
+
+.game-over-title,
+.win-title {
+  font-size: 1.8rem;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  line-height: 1.3;
+}
+
+.game-over-title {
+  color: var(--color-accent-red);
+  text-shadow: 3px 3px 0px rgba(231, 76, 60, 0.4);
+}
+
+.win-title {
+  color: var(--color-gold);
+  text-shadow: var(--shadow-pixel-gold);
+}
+
+.game-over-stats,
+.win-subtitle {
+  font-size: 0.6rem;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+/* ─── Screen Error ───────────────────────────────────────────────────────── */
+
+.screen-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  gap: var(--space-md);
+  color: var(--color-accent-red);
+  font-size: 0.7rem;
+  text-align: center;
+  padding: var(--space-md);
+}
+
+/* ─── Modals ─────────────────────────────────────────────────────────────── */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: var(--color-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: screenFadeIn 0.2s ease-in-out;
+}
+
+.modal-content {
+  background-color: var(--color-bg-mid);
+  border: 2px solid var(--color-gold-dim);
+  padding: var(--space-lg);
+  max-width: 360px;
+  width: 90%;
+  box-shadow: var(--shadow-pixel);
+}
+
+/* ─── Scrollbar Styling ──────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-dim);
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+/* ─── Selection ──────────────────────────────────────────────────────────── */
+
+::selection {
+  background-color: var(--color-gold-dim);
+  color: var(--color-bg-dark);
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+
+@media (min-width: 768px) {
+  html {
+    font-size: 18px;
+  }
+
+  .game-title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 400px) {
+  html {
+    font-size: 14px;
+  }
+
+  .pixel-button {
+    font-size: 0.55rem;
+    padding: var(--space-xs) var(--space-md);
+  }
+
+  .trainer-card {
+    width: 100px;
+    height: 140px;
+  }
+
+  .starter-card {
+    width: 110px;
+    height: 140px;
+  }
+}
+
+/* ─── Reduced Motion ─────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
