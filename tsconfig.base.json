@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ES2020",
+    "moduleResolution": "bundler",
+    "lib": ["ES2020"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@pokelike/core": ["./packages/core/src"],
+      "@pokelike/core/*": ["./packages/core/src/*"],
+      "@pokelike/frontend": ["./packages/frontend/src"],
+      "@pokelike/frontend/*": ["./packages/frontend/src/*"],
+      "@pokelike/server": ["./packages/server/src"],
+      "@pokelike/server/*": ["./packages/server/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist", ".turbo"]
+}
