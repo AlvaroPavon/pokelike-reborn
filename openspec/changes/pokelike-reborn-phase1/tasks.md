@@ -1,4 +1,4 @@
-# Tasks — pokelike-reborn-phase1
+# Tasks ï¿½ pokelike-reborn-phase1
 
 > Auto-generated. Update [ ] ? [x] as tasks are completed.
 
@@ -31,3 +31,14 @@
 - [x] 8.6 Add PWA support (vite-plugin-pwa with service worker + web manifest)
 
 ## Phase 5: Backend Server (in future PR)
+
+## Phase 6: Frontend UI Components (PR 8)
+
+- [x] 7.1 Create HpBar component (color-coded health bar with animation and size variants)
+- [x] 7.2 Create PokemonCard component (sprite, name, level, type badges, HP bar, stats, moves)
+- [x] 7.3 Create TeamPanel component (horizontal/vertical list with drag reorder)
+- [x] 7.4 Create ItemBar component (horizontal item badges with empty state)
+- [x] 7.5 Create MapView component (SVG node graph with zoom/pan controls)
+- [x] 7.6 Create BattleField component (two-sided battle with HP bars, log, victory/defeat)
+- [x] 7.7 Create components/index.ts barrel file
+- [x] 7.8 Add vitest config, test setup, and component tests
