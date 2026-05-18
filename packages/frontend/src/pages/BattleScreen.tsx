@@ -12,6 +12,7 @@ import {
   getGymBadgeName,
 } from "../game/helpers";
 import type { BattleLogEntry } from "@pokelike/core";
+import type { BattleTowerRules } from "@pokelike/core";
 
 /**
  * BattleScreen — Auto-battle simulation screen.
@@ -141,6 +142,20 @@ export default function BattleScreen() {
   const handleContinue = useCallback(() => {
     if (!result) return;
 
+    // ─── Battle Tower Mode ───────────────────────────────────────────────
+    if (gameStore.mode === "battle_tower") {
+      const rules = gameStore.modeRules as BattleTowerRules | null;
+      if (result.winner === "player") {
+        rules?.recordWin();
+        uiStore.navigate("battle_tower");
+      } else {
+        rules?.recordLoss();
+        uiStore.navigate("battle_tower");
+      }
+      return;
+    }
+
+    // ─── Standard Game Modes (Normal / Nuzlocke) ────────────────────────
     if (result.winner === "player") {
       // Check if we should advance to next map
       const isBoss = nodeType === "BOSS";

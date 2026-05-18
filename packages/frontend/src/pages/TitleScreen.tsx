@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useAuthStore } from "../stores/authStore";
 import { useGameStore } from "../stores/gameStore";
 import { useUIStore } from "../stores/uiStore";
 
@@ -12,6 +13,7 @@ export default function TitleScreen() {
   const loadGame = useGameStore((s) => s.loadGame);
   const startNewRun = useGameStore((s) => s.startNewRun);
   const navigate = useUIStore((s) => s.navigate);
+  const token = useAuthStore((s) => s.token);
   const [hasSave, setHasSave] = useState(false);
 
   useEffect(() => {
@@ -30,7 +32,7 @@ export default function TitleScreen() {
 
   const handleBattleTower = useCallback(() => {
     startNewRun("battle_tower");
-    navigate("trainer_select");
+    navigate("battle_tower");
   }, [startNewRun, navigate]);
 
   const handleContinue = useCallback(() => {
@@ -114,6 +116,19 @@ export default function TitleScreen() {
             )}
           </button>
 
+          {/* Play Modes section */}
+          <span
+            style={{
+              fontSize: "0.45rem",
+              color: "var(--color-text-secondary, #888)",
+              textTransform: "uppercase",
+              letterSpacing: "2px",
+              marginTop: "var(--space-sm)",
+            }}
+          >
+            ── Play Modes ──
+          </span>
+
           <button
             className="pixel-button"
             type="button"
@@ -131,6 +146,28 @@ export default function TitleScreen() {
           >
             Battle Tower
           </button>
+
+          {/* Divider before utility buttons */}
+          <div
+            style={{
+              width: "80%",
+              maxWidth: "200px",
+              height: "1px",
+              backgroundColor: "var(--color-border, #333)",
+              margin: "var(--space-xs, 4px) 0",
+            }}
+          />
+
+          {token && (
+            <button
+              className="pixel-button"
+              type="button"
+              onClick={() => navigate("profile")}
+              style={{ maxWidth: "280px", borderColor: "var(--color-accent-blue, #58a6ff)" }}
+            >
+              Profile & Cloud
+            </button>
+          )}
 
           <button
             className="pixel-button"

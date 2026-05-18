@@ -1,10 +1,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { GameMode, PokemonInstance, ItemInstance } from "@pokelike/core";
+import type { ModeRules } from "@pokelike/core";
+import { createModeRules } from "@pokelike/core";
 
 export interface GameStateStore {
   // State
   mode: GameMode | null;
+  modeRules: ModeRules | null;
   team: PokemonInstance[];
   items: ItemInstance[];
   badges: string[];
@@ -31,6 +34,7 @@ export interface GameStateStore {
 
 const initialState = {
   mode: null as GameMode | null,
+  modeRules: null as ModeRules | null,
   team: [] as PokemonInstance[],
   items: [] as ItemInstance[],
   badges: [] as string[],
@@ -49,6 +53,7 @@ export const useGameStore = create<GameStateStore>()(
         set({
           ...initialState,
           mode,
+          modeRules: createModeRules(mode),
           runSeed: Date.now(),
           currentMapIndex: 0,
         });
@@ -152,7 +157,27 @@ export const useGameStore = create<GameStateStore>()(
         currentNodeId: state.currentNodeId,
         runSeed: state.runSeed,
         trainer: state.trainer,
+        // modeRules is NOT persisted — it is recreated on new game
+        // via startNewRun() or rehydrated from the mode field.
       }),
     },
   ),
 );
+
+// ─── Rehydration guard ─────────────────────────────────────────────────────────
+//
+// When a save is loaded from localStorage, `mode` is restored but `modeRules`
+// is not (it is excluded from partialize). This subscriber recreates the
+// ModeRules instance whenever `mode` is set without `modeRules`.
+//
+// This handles two cases:
+//   1. Page reload → persist rehydrates `mode` → subscriber creates modeRules
+//   2. startNewRun() sets both `mode` and `modeRules` → subscriber sees modeRules
+//      already set and skips creation.
+
+useGameStore.subscribe((state) => {
+  const currentMode = state.mode;
+  if (currentMode && !useGameStore.getState().modeRules) {
+    useGameStore.setState({ modeRules: createModeRules(currentMode) });
+  }
+});

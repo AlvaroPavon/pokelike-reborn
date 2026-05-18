@@ -1,6 +1,8 @@
 import { useCallback, useState } from "react";
+import { getSpeciesById } from "@pokelike/core";
 import { useGameStore } from "../stores/gameStore";
 import { useUIStore } from "../stores/uiStore";
+import { usePokedexStore } from "../stores/pokedexStore";
 import PokemonCard from "../components/PokemonCard";
 import {
   getSpeciesName,
@@ -32,6 +34,10 @@ export default function CatchScreen() {
         setSelectedCatch(pokemon);
         setSwapMode(true);
       } else {
+        // Mark as caught in Pokédex before adding to team
+        const entry = getSpeciesById(pokemon.speciesId);
+        if (entry) usePokedexStore.getState().markCaught(entry.pokedexNumber);
+
         gameStore.addToTeam(pokemon);
         navigate("map");
       }
@@ -42,6 +48,10 @@ export default function CatchScreen() {
   const handleSwapSelect = useCallback(
     (swapIndex: number) => {
       if (selectedCatch) {
+        // Mark as caught in Pokédex before adding to team
+        const entry = getSpeciesById(selectedCatch.speciesId);
+        if (entry) usePokedexStore.getState().markCaught(entry.pokedexNumber);
+
         gameStore.removeFromTeam(swapIndex);
         gameStore.addToTeam(selectedCatch);
       }

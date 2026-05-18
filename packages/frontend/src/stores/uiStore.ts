@@ -11,7 +11,11 @@ export type ScreenId =
   | "catch"
   | "item"
   | "game_over"
-  | "win";
+  | "win"
+  | "pokedex"
+  | "pokemon_detail"
+  | "battle_tower"
+  | "profile";
 
 export interface UIStateStore {
   currentScreen: ScreenId;
@@ -27,6 +31,9 @@ export interface UIStateStore {
   catchChoices: PokemonInstance[];
   itemChoices: ItemOption[];
 
+  /** Selected Pokémon species ID for the detail screen */
+  selectedPokemonId: string | null;
+
   navigate: (screen: ScreenId) => void;
   openModal: (modal: string) => void;
   closeModal: () => void;
@@ -39,6 +46,9 @@ export interface UIStateStore {
   setCatchData: (choices: PokemonInstance[]) => void;
   /** Set item choices before navigating to item screen */
   setItemData: (choices: ItemOption[]) => void;
+
+  /** Set the selected Pokémon for the detail screen */
+  setSelectedPokemonId: (id: string | null) => void;
 }
 
 export const useUIStore = create<UIStateStore>()((set) => ({
@@ -54,6 +64,7 @@ export const useUIStore = create<UIStateStore>()((set) => ({
   battleNodeType: null,
   catchChoices: [],
   itemChoices: [],
+  selectedPokemonId: null,
 
   navigate: (screen: ScreenId) => {
     set({ currentScreen: screen, modalOpen: null });
@@ -85,5 +96,9 @@ export const useUIStore = create<UIStateStore>()((set) => ({
 
   setItemData: (choices: ItemOption[]) => {
     set({ itemChoices: choices });
+  },
+
+  setSelectedPokemonId: (id: string | null) => {
+    set({ selectedPokemonId: id });
   },
 }));

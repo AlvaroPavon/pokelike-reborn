@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { SeededRNG, type MapGraph, type MapNode } from "@pokelike/core";
+import { SeededRNG, getSpeciesById, type MapGraph, type MapNode } from "@pokelike/core";
 import { useGameStore } from "../stores/gameStore";
 import { useUIStore } from "../stores/uiStore";
+import { usePokedexStore } from "../stores/pokedexStore";
 import MapView from "../components/MapView";
 import TeamPanel from "../components/TeamPanel";
 import ItemBar from "../components/ItemBar";
@@ -63,13 +64,25 @@ export default function MapScreen() {
 
       const resolution = processNodeClick(node, gameStore.currentMapIndex, rng);
 
+      const pokedexStore = usePokedexStore.getState();
+
       switch (resolution.type) {
         case "battle": {
+          // Mark all enemy species as seen in the Pokédex
+          for (const p of resolution.enemyTeam) {
+            const entry = getSpeciesById(p.speciesId);
+            if (entry) pokedexStore.markSeen(entry.pokedexNumber);
+          }
           uiStore.setBattleData(resolution.enemyTeam, node.type);
           uiStore.navigate("battle");
           break;
         }
         case "catch": {
+          // Mark all encounter choices as seen in the Pokédex
+          for (const p of resolution.choices) {
+            const entry = getSpeciesById(p.speciesId);
+            if (entry) pokedexStore.markSeen(entry.pokedexNumber);
+          }
           uiStore.setCatchData(resolution.choices);
           uiStore.navigate("catch");
           break;

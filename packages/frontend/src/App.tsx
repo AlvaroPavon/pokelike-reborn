@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import { useAuthStore } from "./stores/authStore";
+import { useGameStore } from "./stores/gameStore";
 import { useUIStore } from "./stores/uiStore";
+import { initAutoSave } from "./stores/autoSave";
+import { loadFromCloud } from "./utils/cloudSync";
 import TitleScreen from "./pages/TitleScreen";
 import TrainerSelectScreen from "./pages/TrainerSelectScreen";
 import StarterSelectScreen from "./pages/StarterSelectScreen";
@@ -9,6 +13,10 @@ import CatchScreen from "./pages/CatchScreen";
 import ItemScreen from "./pages/ItemScreen";
 import GameOverScreen from "./pages/GameOverScreen";
 import WinScreen from "./pages/WinScreen";
+import PokedexScreen from "./pages/PokedexScreen";
+import PokemonDetailScreen from "./pages/PokemonDetailScreen";
+import BattleTowerScreen from "./pages/BattleTowerScreen";
+import ProfileScreen from "./pages/ProfileScreen";
 
 import type { ScreenId } from "./stores/uiStore";
 
@@ -22,6 +30,10 @@ const screenComponents: Record<ScreenId, React.FC> = {
   item: ItemScreen,
   game_over: GameOverScreen,
   win: WinScreen,
+  pokedex: PokedexScreen,
+  pokemon_detail: PokemonDetailScreen,
+  battle_tower: BattleTowerScreen,
+  profile: ProfileScreen,
 };
 
 /**
@@ -29,12 +41,29 @@ const screenComponents: Record<ScreenId, React.FC> = {
  *
  * Renders the current screen based on uiStore.currentScreen.
  * Wraps screen transitions in a fade animation for a polished feel.
+ *
+ * On first mount, initialises the auto-save system and attempts to
+ * restore game state from the cloud when the user is authenticated.
  */
 export default function App() {
   const currentScreen = useUIStore((s) => s.currentScreen);
   const [displayedScreen, setDisplayedScreen] = useState(currentScreen);
   const [transitioning, setTransitioning] = useState(false);
   const prevScreenRef = useRef(currentScreen);
+
+  // Initialise subsystems once on mount
+  useEffect(() => {
+    // Start auto-save (debounced local saves + cloud sync)
+    initAutoSave(useGameStore);
+
+    // Attempt to restore cloud state when authenticated
+    const token = useAuthStore.getState().token;
+    if (token) {
+      loadFromCloud().catch(() => {
+        /* cloud sync errors are logged inside loadFromCloud */
+      });
+    }
+  }, []);
 
   // Handle screen transitions
   useEffect(() => {
