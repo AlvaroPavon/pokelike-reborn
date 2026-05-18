@@ -16,6 +16,7 @@ import { useUIStore } from "../../stores/uiStore";
 
 const SOCKET_URL =
   (import.meta as ImportMeta & { env?: { VITE_SOCKET_URL?: string } }).env?.VITE_SOCKET_URL
+  ?? globalThis.location?.origin
   ?? "http://localhost:3001";
 
 interface QueueStatusPayload {
