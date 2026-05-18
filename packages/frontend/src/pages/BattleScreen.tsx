@@ -1,18 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { SeededRNG } from "@pokelike/core";
-import { useGameStore } from "../stores/gameStore";
-import { useUIStore } from "../stores/uiStore";
-import BattleField from "../components/BattleField";
 import {
+  SeededRNG,
   simulateBattle,
   applyLevelGain,
   canEvolve,
   resolveEvolution,
+} from "@pokelike/core";
+import { useGameStore } from "../stores/gameStore";
+import { useUIStore } from "../stores/uiStore";
+import BattleField from "../components/BattleField";
+import {
   getSpeciesName,
   getGymBadgeName,
 } from "../game/helpers";
-import type { BattleLogEntry } from "@pokelike/core";
-import type { BattleTowerRules } from "@pokelike/core";
+import type { BattleLogEntry, BattleTowerRules } from "@pokelike/core";
 
 /**
  * BattleScreen — Auto-battle simulation screen.
@@ -38,9 +39,11 @@ export default function BattleScreen() {
 
   const enemyTeam = uiStore.battleEnemyTeam;
   const nodeType = uiStore.battleNodeType;
+  const isMultiplayer = nodeType === "MULTIPLAYER";
 
   // Run battle simulation on mount
   useEffect(() => {
+    if (isMultiplayer) return;
     if (!enemyTeam || battleRunRef.current) return;
     battleRunRef.current = true;
 
@@ -136,10 +139,18 @@ export default function BattleScreen() {
     }, 400);
 
     return () => clearInterval(logInterval);
-  }, [enemyTeam, gameStore, nodeType]);
+  }, [enemyTeam, gameStore, nodeType, isMultiplayer]);
 
   // Continue handler
   const handleContinue = useCallback(() => {
+    if (isMultiplayer) {
+      uiStore.setBattleLog([]);
+      uiStore.setMultiplayerResult(null);
+      uiStore.setMultiplayerStatus("idle");
+      uiStore.navigate("lobby");
+      return;
+    }
+
     if (!result) return;
 
     // ─── Battle Tower Mode ───────────────────────────────────────────────
@@ -182,7 +193,7 @@ export default function BattleScreen() {
     } else {
       uiStore.navigate("game_over");
     }
-  }, [result, nodeType, gameStore, uiStore]);
+  }, [result, nodeType, gameStore, uiStore, isMultiplayer]);
 
   // Retry handler (for when you lose but want to try again)
   const handleRetry = useCallback(() => {
@@ -217,8 +228,14 @@ export default function BattleScreen() {
     );
   }
 
-  const playerWin = result?.winner === "player";
-  const battleOver = !animating && result !== null;
+  const playerWin = isMultiplayer
+    ? uiStore.multiplayerResult?.winnerUserId !== null
+    : result?.winner === "player";
+  const battleOver = isMultiplayer
+    ? !uiStore.battleAnimating && uiStore.multiplayerResult !== null
+    : !animating && result !== null;
+  const displayedLog = isMultiplayer ? uiStore.battleLog : battleLog;
+  const displayedAnimating = isMultiplayer ? uiStore.battleAnimating : animating;
 
   return (
     <div
@@ -236,8 +253,8 @@ export default function BattleScreen() {
         <BattleField
           playerTeam={gameStore.team}
           enemyTeam={enemyTeam}
-          battleLog={battleLog}
-          animating={animating}
+          battleLog={displayedLog}
+          animating={displayedAnimating}
         />
       </div>
 
@@ -266,7 +283,7 @@ export default function BattleScreen() {
                 : "var(--color-accent-red)",
             }}
           >
-            {playerWin ? "Continue" : "Game Over"}
+              {isMultiplayer ? "Back to Lobby" : playerWin ? "Continue" : "Game Over"}
           </button>
         )}
 

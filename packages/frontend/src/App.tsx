@@ -17,6 +17,7 @@ import PokedexScreen from "./pages/PokedexScreen";
 import PokemonDetailScreen from "./pages/PokemonDetailScreen";
 import BattleTowerScreen from "./pages/BattleTowerScreen";
 import ProfileScreen from "./pages/ProfileScreen";
+import LobbyScreen from "./pages/LobbyScreen";
 
 import type { ScreenId } from "./stores/uiStore";
 
@@ -34,6 +35,7 @@ const screenComponents: Record<ScreenId, React.FC> = {
   pokemon_detail: PokemonDetailScreen,
   battle_tower: BattleTowerScreen,
   profile: ProfileScreen,
+  lobby: LobbyScreen,
 };
 
 /**

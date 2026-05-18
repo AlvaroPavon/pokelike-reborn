@@ -35,6 +35,10 @@ export default function TitleScreen() {
     navigate("battle_tower");
   }, [startNewRun, navigate]);
 
+  const handleMultiplayer = useCallback(() => {
+    navigate("lobby");
+  }, [navigate]);
+
   const handleContinue = useCallback(() => {
     const loaded = loadGame();
     if (loaded) {
@@ -145,6 +149,21 @@ export default function TitleScreen() {
             style={{ maxWidth: "280px", borderColor: "var(--color-accent-purple)" }}
           >
             Battle Tower
+          </button>
+
+          <button
+            className="pixel-button"
+            type="button"
+            onClick={handleMultiplayer}
+            disabled={!token}
+            style={{
+              maxWidth: "280px",
+              borderColor: "var(--color-accent-blue, #58a6ff)",
+              opacity: token ? 1 : 0.4,
+            }}
+            title={token ? "Find a 3v3 match" : "Login required"}
+          >
+            Multiplayer 3v3
           </button>
 
           {/* Divider before utility buttons */}

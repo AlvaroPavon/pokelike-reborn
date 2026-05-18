@@ -1,6 +1,5 @@
 import { create } from "zustand";
-import type { BattleLogEntry, PokemonInstance } from "@pokelike/core";
-import type { ItemOption } from "../game/helpers";
+import type { BattleLogEntry, PokemonInstance, ItemOption } from "@pokelike/core";
 
 export type ScreenId =
   | "title"
@@ -15,13 +14,24 @@ export type ScreenId =
   | "pokedex"
   | "pokemon_detail"
   | "battle_tower"
-  | "profile";
+  | "profile"
+  | "lobby";
+
+export type MultiplayerStatus = "idle" | "searching" | "matched" | "battle" | "result" | "error";
+
+export interface MultiplayerBattleResult {
+  roomId: string;
+  winnerUserId: string | null;
+  loserUserId: string | null;
+}
 
 export interface UIStateStore {
   currentScreen: ScreenId;
   modalOpen: string | null;
   battleLog: BattleLogEntry[];
   battleAnimating: boolean;
+  multiplayerStatus: MultiplayerStatus;
+  multiplayerResult: MultiplayerBattleResult | null;
   mapZoom: number;
   mapPan: { x: number; y: number };
 
@@ -39,6 +49,11 @@ export interface UIStateStore {
   closeModal: () => void;
   setMapZoom: (zoom: number) => void;
   setMapPan: (pan: { x: number; y: number }) => void;
+  setBattleLog: (log: BattleLogEntry[]) => void;
+  appendBattleLog: (entry: BattleLogEntry) => void;
+  setBattleAnimating: (animating: boolean) => void;
+  setMultiplayerStatus: (status: MultiplayerStatus) => void;
+  setMultiplayerResult: (result: MultiplayerBattleResult | null) => void;
 
   /** Set battle data before navigating to battle screen */
   setBattleData: (enemyTeam: PokemonInstance[], nodeType?: string) => void;
@@ -56,6 +71,8 @@ export const useUIStore = create<UIStateStore>()((set) => ({
   modalOpen: null,
   battleLog: [],
   battleAnimating: false,
+  multiplayerStatus: "idle",
+  multiplayerResult: null,
   mapZoom: 1,
   mapPan: { x: 0, y: 0 },
 
@@ -84,6 +101,26 @@ export const useUIStore = create<UIStateStore>()((set) => ({
 
   setMapPan: (pan: { x: number; y: number }) => {
     set({ mapPan: pan });
+  },
+
+  setBattleLog: (log: BattleLogEntry[]) => {
+    set({ battleLog: log });
+  },
+
+  appendBattleLog: (entry: BattleLogEntry) => {
+    set((state) => ({ battleLog: [...state.battleLog, entry] }));
+  },
+
+  setBattleAnimating: (animating: boolean) => {
+    set({ battleAnimating: animating });
+  },
+
+  setMultiplayerStatus: (status: MultiplayerStatus) => {
+    set({ multiplayerStatus: status });
+  },
+
+  setMultiplayerResult: (result: MultiplayerBattleResult | null) => {
+    set({ multiplayerResult: result });
   },
 
   setBattleData: (enemyTeam: PokemonInstance[], nodeType?: string) => {

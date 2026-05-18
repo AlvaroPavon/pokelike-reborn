@@ -24,10 +24,19 @@ interface User {
   passwordHash: string;
   createdAt: number;
   gameState: Record<string, unknown>;
+  multiplayerStats: MultiplayerStats;
+}
+
+/** Minimal ranked multiplayer stats stored in the user profile. */
+export interface MultiplayerStats {
+  wins: number;
+  losses: number;
+  rank: number;
+  lastBattleAt: number | null;
 }
 
 /** Payload embedded inside every issued JWT. */
-interface JwtPayload {
+export interface JwtPayload {
   userId: string;
   email: string;
 }
@@ -35,6 +44,40 @@ interface JwtPayload {
 // ─── In-memory store (MVP — replace with DB later) ──────────────────────
 
 const users = new Map<string, User>();
+
+function createInitialMultiplayerStats(): MultiplayerStats {
+  return {
+    wins: 0,
+    losses: 0,
+    rank: 1000,
+    lastBattleAt: null,
+  };
+}
+
+/** Update the in-memory profile stats after a completed multiplayer battle. */
+export function recordMultiplayerResult(winnerUserId: string, loserUserId: string): void {
+  const winner = users.get(winnerUserId);
+  const loser = users.get(loserUserId);
+  const now = Date.now();
+
+  if (winner) {
+    winner.multiplayerStats = {
+      ...winner.multiplayerStats,
+      wins: winner.multiplayerStats.wins + 1,
+      rank: winner.multiplayerStats.rank + 15,
+      lastBattleAt: now,
+    };
+  }
+
+  if (loser) {
+    loser.multiplayerStats = {
+      ...loser.multiplayerStats,
+      losses: loser.multiplayerStats.losses + 1,
+      rank: Math.max(0, loser.multiplayerStats.rank - 10),
+      lastBattleAt: now,
+    };
+  }
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
@@ -51,7 +94,7 @@ function createToken(payload: JwtPayload): string {
 }
 
 /** Verify and decode a JWT. Returns null on invalid/expired tokens. */
-function verifyToken(token: string): JwtPayload | null {
+export function verifyToken(token: string): JwtPayload | null {
   try {
     return jwt.verify(token, config.jwtSecret) as JwtPayload;
   } catch {
@@ -119,6 +162,7 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
         passwordHash,
         createdAt: Date.now(),
         gameState: {},
+        multiplayerStats: createInitialMultiplayerStats(),
       });
 
       return reply.status(201).send({ userId });
@@ -174,6 +218,7 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
           userId: foundUser.userId,
           email: foundUser.email,
           createdAt: foundUser.createdAt,
+          multiplayerStats: foundUser.multiplayerStats,
         },
       };
     },
@@ -211,6 +256,7 @@ export async function profileRoutes(fastify: FastifyInstance): Promise<void> {
         userId: user.userId,
         email: user.email,
         createdAt: user.createdAt,
+        multiplayerStats: user.multiplayerStats,
       },
       gameState: user.gameState,
     };

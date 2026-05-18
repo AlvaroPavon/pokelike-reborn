@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useGameStore } from "../stores/gameStore";
 import { useUIStore } from "../stores/uiStore";
-import type { ItemOption } from "../game/helpers";
+import type { ItemOption } from "@pokelike/core";
 
 /**
  * ItemScreen — Choose an item to add to inventory.
