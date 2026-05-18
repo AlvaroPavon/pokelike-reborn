@@ -13,7 +13,7 @@
  * @module rules
  */
 
-import type { PokemonInstance } from "../types";
+import type { PokemonInstance } from "../types/index.js";
 
 /**
  * Game mode rule strategy.

@@ -12,8 +12,8 @@
  * @module rules
  */
 
-import type { PokemonInstance } from "../types";
-import type { ModeRules } from "./ModeRules";
+import type { PokemonInstance } from "../types/index.js";
+import type { ModeRules } from "./ModeRules.js";
 
 /**
  * Standard game mode rules.

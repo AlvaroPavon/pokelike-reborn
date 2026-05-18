@@ -11,9 +11,9 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import type { PokemonInstance } from "../../types";
-import { NormalRules } from "../NormalRules";
-import { NuzlockeRules } from "../NuzlockeRules";
-import { createModeRules } from "../index";
+import { NormalRules } from "../NormalRules.js";
+import { NuzlockeRules } from "../NuzlockeRules.js";
+import { createModeRules } from "../index.js";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 

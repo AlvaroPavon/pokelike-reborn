@@ -7,21 +7,21 @@
  * @module rules
  */
 
-import type { GameMode } from "../types";
-import type { ModeRules } from "./ModeRules";
-import { NormalRules } from "./NormalRules";
-import { NuzlockeRules } from "./NuzlockeRules";
-import { BattleTowerRules } from "./BattleTowerRules";
+import type { GameMode } from "../types/index.js";
+import type { ModeRules } from "./ModeRules.js";
+import { NormalRules } from "./NormalRules.js";
+import { NuzlockeRules } from "./NuzlockeRules.js";
+import { BattleTowerRules } from "./BattleTowerRules.js";
 
 // ─── Re-exports ────────────────────────────────────────────────────────────────
 
-export type { ModeRules } from "./ModeRules";
-export { NormalRules } from "./NormalRules";
-export { NuzlockeRules } from "./NuzlockeRules";
-export { BattleTowerRules } from "./BattleTowerRules";
-export type { TowerBattleResult } from "./BattleTowerRules";
-export { createAreaTracker } from "./areaTracking";
-export type { AreaTracker } from "./areaTracking";
+export type { ModeRules } from "./ModeRules.js";
+export { NormalRules } from "./NormalRules.js";
+export { NuzlockeRules } from "./NuzlockeRules.js";
+export { BattleTowerRules } from "./BattleTowerRules.js";
+export type { TowerBattleResult } from "./BattleTowerRules.js";
+export { createAreaTracker } from "./areaTracking.js";
+export type { AreaTracker } from "./areaTracking.js";
 
 // ─── Factory ───────────────────────────────────────────────────────────────────
 

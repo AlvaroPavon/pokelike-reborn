@@ -15,9 +15,9 @@
  * @module rules
  */
 
-import type { PokemonInstance } from "../types";
-import type { ModeRules } from "./ModeRules";
-import { createAreaTracker, type AreaTracker } from "./areaTracking";
+import type { PokemonInstance } from "../types/index.js";
+import type { ModeRules } from "./ModeRules.js";
+import { createAreaTracker, type AreaTracker } from "./areaTracking.js";
 
 /**
  * Nuzlocke game mode rules.
