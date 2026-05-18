@@ -44,10 +44,10 @@ export const GYM_LEADERS: GymLeaderData[] = [
     title: "Water-Type Gym Leader",
     type: PT.Water,
     team: [
-      makeGymMon("staryu", 18),
-      makeGymMon("staryu", 20),
-      makeGymMon("starmie", 22),
-    ].map((p) => Object.assign(p, { speciesId: p.speciesId === "staryu" ? "tentacool" : p.speciesId === "starmie" ? "tentacruel" : p.speciesId })),
+      makeGymMon("tentacool", 18),
+      makeGymMon("tentacool", 20),
+      makeGymMon("tentacruel", 22),
+    ],
   },
   {
     name: "Lt. Surge",
