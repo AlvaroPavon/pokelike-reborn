@@ -10,12 +10,10 @@
 
 import { Server as SocketServer } from "socket.io";
 import type { FastifyInstance } from "fastify";
+import { config } from "../config.js";
 import { authMiddleware } from "./auth.js";
 import { Matchmaker } from "./matchmaker.js";
 import { BattleSession } from "./session.js";
-
-/** Default frontend origin for CORS. */
-const FRONTEND_ORIGIN = "http://localhost:5173";
 
 /**
  * Initializes a Socket.io server on the given Fastify instance.
@@ -35,7 +33,7 @@ const FRONTEND_ORIGIN = "http://localhost:5173";
 export function initSocketServer(fastify: FastifyInstance): SocketServer {
   const io = new SocketServer(fastify.server, {
     cors: {
-      origin: [FRONTEND_ORIGIN],
+      origin: [config.frontendOrigin],
       methods: ["GET", "POST"],
     },
   });

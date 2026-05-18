@@ -4,36 +4,24 @@
  * Provides registration, login, profile retrieval, and game state sync
  * using bcryptjs for password hashing and jsonwebtoken for session management.
  *
- * In-memory Map is used for user storage (MVP phase). Switching to a
- * persistent database requires replacing the `users` Map implementation.
+ * A small JSON-backed store is used for MVP persistence. Replace it with a
+ * production database before public traffic.
  *
  * @module
  */
 
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { config } from "../config.js";
+import {
+  createInitialMultiplayerStats,
+  userStore,
+  type MultiplayerStats,
+  type User,
+} from "../store/userStore.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 // ─── Types ───────────────────────────────────────────────────────────────
-
-/** Internal user record stored in-memory. */
-interface User {
-  userId: string;
-  email: string;
-  passwordHash: string;
-  createdAt: number;
-  gameState: Record<string, unknown>;
-  multiplayerStats: MultiplayerStats;
-}
-
-/** Minimal ranked multiplayer stats stored in the user profile. */
-export interface MultiplayerStats {
-  wins: number;
-  losses: number;
-  rank: number;
-  lastBattleAt: number | null;
-}
 
 /** Payload embedded inside every issued JWT. */
 export interface JwtPayload {
@@ -41,42 +29,29 @@ export interface JwtPayload {
   email: string;
 }
 
-// ─── In-memory store (MVP — replace with DB later) ──────────────────────
-
-const users = new Map<string, User>();
-
-function createInitialMultiplayerStats(): MultiplayerStats {
-  return {
-    wins: 0,
-    losses: 0,
-    rank: 1000,
-    lastBattleAt: null,
-  };
-}
-
-/** Update the in-memory profile stats after a completed multiplayer battle. */
+/** Update the persistent MVP profile stats after a completed multiplayer battle. */
 export function recordMultiplayerResult(winnerUserId: string, loserUserId: string): void {
-  const winner = users.get(winnerUserId);
-  const loser = users.get(loserUserId);
   const now = Date.now();
 
-  if (winner) {
-    winner.multiplayerStats = {
+  userStore.update(winnerUserId, (winner) => ({
+    ...winner,
+    multiplayerStats: {
       ...winner.multiplayerStats,
       wins: winner.multiplayerStats.wins + 1,
       rank: winner.multiplayerStats.rank + 15,
       lastBattleAt: now,
-    };
-  }
+    },
+  }));
 
-  if (loser) {
-    loser.multiplayerStats = {
+  userStore.update(loserUserId, (loser) => ({
+    ...loser,
+    multiplayerStats: {
       ...loser.multiplayerStats,
       losses: loser.multiplayerStats.losses + 1,
       rank: Math.max(0, loser.multiplayerStats.rank - 10),
       lastBattleAt: now,
-    };
-  }
+    },
+  }));
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
@@ -147,16 +122,14 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       // Check for existing user by email
-      for (const user of users.values()) {
-        if (user.email === email) {
-          return reply.status(409).send({ error: "Email already registered" });
-        }
+      if (userStore.findByEmail(email)) {
+        return reply.status(409).send({ error: "Email already registered" });
       }
 
       const userId = generateUserId();
       const passwordHash = await bcrypt.hash(password, 10);
 
-      users.set(userId, {
+      userStore.set({
         userId,
         email,
         passwordHash,
@@ -190,13 +163,7 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       // Find user by email
-      let foundUser: User | undefined;
-      for (const user of users.values()) {
-        if (user.email === email) {
-          foundUser = user;
-          break;
-        }
-      }
+      const foundUser: User | undefined = userStore.findByEmail(email);
 
       if (!foundUser) {
         return reply.status(401).send({ error: "Invalid email or password" });
@@ -246,7 +213,7 @@ export async function profileRoutes(fastify: FastifyInstance): Promise<void> {
       return reply.status(401).send({ error: "Unauthorized" });
     }
 
-    const user = users.get(payload.userId);
+    const user = userStore.get(payload.userId);
     if (!user) {
       return reply.status(404).send({ error: "User not found" });
     }
@@ -276,15 +243,18 @@ export async function profileRoutes(fastify: FastifyInstance): Promise<void> {
         return reply.status(401).send({ error: "Unauthorized" });
       }
 
-      const user = users.get(payload.userId);
+      const user = userStore.get(payload.userId);
       if (!user) {
         return reply.status(404).send({ error: "User not found" });
       }
 
       const { gameState } = request.body ?? {};
-      user.gameState = typeof gameState === "object" && gameState !== null
-        ? gameState
-        : {};
+      userStore.update(user.userId, (current) => ({
+        ...current,
+        gameState: typeof gameState === "object" && gameState !== null
+          ? gameState
+          : {},
+      }));
 
       return { success: true };
     },

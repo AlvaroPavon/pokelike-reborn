@@ -17,6 +17,10 @@ export interface ServerConfig {
   jwtSecret: string;
   /** JWT token expiration duration (default: "7d") */
   jwtExpiresIn: string;
+  /** JSON file path used by the MVP persistent user store */
+  userStorePath: string;
+  /** Allowed frontend origin for Socket.io CORS */
+  frontendOrigin: string;
 }
 
 export const config: ServerConfig = {
@@ -26,4 +30,6 @@ export const config: ServerConfig = {
   cacheTtlMs: 60 * 60 * 1000, // 1 hour
   jwtSecret: process.env.JWT_SECRET ?? "pokelike-reborn-dev-secret-key-2026",
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "7d",
+  userStorePath: process.env.USER_STORE_PATH ?? "data/users.json",
+  frontendOrigin: process.env.FRONTEND_ORIGIN ?? "http://localhost:5173",
 } as const;
