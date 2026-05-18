@@ -6,7 +6,24 @@ server {
     index index.html;
 
     location / {
+        add_header Cache-Control "no-store";
         try_files $uri $uri/ /index.html;
+    }
+
+    location = /index.html {
+        add_header Cache-Control "no-store";
+    }
+
+    location = /registerSW.js {
+        add_header Cache-Control "no-store";
+    }
+
+    location = /sw.js {
+        add_header Cache-Control "no-store";
+    }
+
+    location = /manifest.webmanifest {
+        add_header Cache-Control "no-cache";
     }
 
     location /health {
