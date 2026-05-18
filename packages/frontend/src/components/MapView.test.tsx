@@ -68,22 +68,14 @@ describe("MapView", () => {
   });
 
   it("marks current node node", () => {
-    const { container } = render(<MapView {...defaultProps} />);
-    const circles = container.querySelectorAll("circle");
-    // Find the gold colored circle (current node)
-    const goldCircles = Array.from(circles).filter(
-      (c) =>
-        c.getAttribute("fill") === "var(--color-gold, #e2b714)" ||
-        c.classList.contains("current-node"),
-    );
-    // We check that the start node exists by aria attribute
+    render(<MapView {...defaultProps} />);
     expect(screen.getByLabelText(/START/)).toBeInTheDocument();
   });
 
-  it("renders edges as line elements", () => {
+  it("renders edges as route path elements", () => {
     const { container } = render(<MapView {...defaultProps} />);
-    const lines = container.querySelectorAll("line");
-    expect(lines.length).toBeGreaterThanOrEqual(2);
+    const paths = container.querySelectorAll("path.map-edge");
+    expect(paths.length).toBeGreaterThanOrEqual(2);
   });
 
   it("renders edges with label", () => {

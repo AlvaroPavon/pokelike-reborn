@@ -4,10 +4,7 @@ import { useGameStore } from "../stores/gameStore";
 import { useUIStore } from "../stores/uiStore";
 
 /**
- * TitleScreen — Main menu with game mode selection.
- *
- * Shows logo, subtitle, and action buttons. Continue button
- * is only visible when a saved game exists.
+ * TitleScreen - main menu with game mode selection.
  */
 export default function TitleScreen() {
   const loadGame = useGameStore((s) => s.loadGame);
@@ -48,57 +45,21 @@ export default function TitleScreen() {
 
   return (
     <div className="screen title-screen">
-      <div
-        className="screen-content"
-        style={{
-          justifyContent: "center",
-          gap: "var(--space-lg)",
-          padding: "var(--space-xl) var(--space-md)",
-        }}
-      >
-        {/* Logo */}
-        <div style={{ textAlign: "center" }}>
-          <h1
-            className="game-title"
-            style={{
-              fontSize: "clamp(1.2rem, 5vw, 2rem)",
-              marginBottom: "var(--space-xs)",
-            }}
-          >
-            POKELIKE REBORN
-          </h1>
-          <p
-            className="subtitle"
-            style={{
-              fontSize: "clamp(0.45rem, 2vw, 0.65rem)",
-              color: "var(--color-text-secondary)",
-              letterSpacing: "2px",
-            }}
-          >
-            Pokemon Roguelike
-          </p>
-        </div>
+      <div className="title-screen__clouds" aria-hidden="true" />
+      <div className="title-screen__content">
+        <header className="title-screen__brand">
+          <h1 className="game-title">POKELIKE REBORN</h1>
+          <p className="subtitle">Pokemon Roguelike</p>
+          <span className="title-screen__version">v0.1.0</span>
+        </header>
 
-        {/* Decorative divider */}
-        <div
-          style={{
-            width: "60%",
-            maxWidth: "200px",
-            height: "2px",
-            backgroundColor: "var(--color-gold-dim)",
-            opacity: 0.5,
-          }}
-        />
-
-        {/* Menu buttons */}
-        <div className="menu-options" style={{ gap: "var(--space-sm)" }}>
+        <div className="title-screen__primary-actions">
           <button
-            className="pixel-button"
+            className="pixel-button pixel-button--primary"
             type="button"
             onClick={handleNewGame}
-            style={{ maxWidth: "280px" }}
           >
-            New Game
+            Normal Mode
           </button>
 
           <button
@@ -106,111 +67,72 @@ export default function TitleScreen() {
             type="button"
             onClick={handleContinue}
             disabled={!hasSave}
-            style={{
-              maxWidth: "280px",
-              opacity: hasSave ? 1 : 0.4,
-            }}
             title={hasSave ? "Continue saved game" : "No saved game found"}
           >
-            Continue
-            {!hasSave && (
-              <span style={{ display: "block", fontSize: "0.35rem", marginTop: "2px" }}>
-                (no save)
-              </span>
-            )}
+            {hasSave ? "Continue Run" : "Continue"}
           </button>
+        </div>
 
-          {/* Play Modes section */}
-          <span
-            style={{
-              fontSize: "0.45rem",
-              color: "var(--color-text-secondary, #888)",
-              textTransform: "uppercase",
-              letterSpacing: "2px",
-              marginTop: "var(--space-sm)",
-            }}
-          >
-            ── Play Modes ──
-          </span>
-
+        <div className="title-screen__mode-row" aria-label="Game modes">
           <button
-            className="pixel-button"
+            className="pixel-button pixel-button--danger"
             type="button"
             onClick={handleNuzlocke}
-            style={{ maxWidth: "280px", borderColor: "var(--color-accent-red)" }}
           >
-            Nuzlocke Mode
+            Nuzlocke
           </button>
 
           <button
-            className="pixel-button"
+            className="pixel-button pixel-button--muted"
             type="button"
             onClick={handleBattleTower}
-            style={{ maxWidth: "280px", borderColor: "var(--color-accent-purple)" }}
           >
             Battle Tower
           </button>
+        </div>
+
+        <div className="title-screen__utility-grid" aria-label="Utilities">
+          <button
+            className="pixel-button pixel-button--dark"
+            type="button"
+            onClick={() => navigate("pokedex")}
+          >
+            Pokedex
+          </button>
 
           <button
-            className="pixel-button"
+            className="pixel-button pixel-button--dark"
+            type="button"
+            onClick={() => navigate("profile")}
+            disabled={!token}
+            title={token ? "Open profile" : "Login required"}
+          >
+            Profile
+          </button>
+
+          <button
+            className="pixel-button pixel-button--dark"
             type="button"
             onClick={handleMultiplayer}
             disabled={!token}
-            style={{
-              maxWidth: "280px",
-              borderColor: "var(--color-accent-blue, #58a6ff)",
-              opacity: token ? 1 : 0.4,
-            }}
             title={token ? "Find a 3v3 match" : "Login required"}
           >
             Multiplayer 3v3
           </button>
 
-          {/* Divider before utility buttons */}
-          <div
-            style={{
-              width: "80%",
-              maxWidth: "200px",
-              height: "1px",
-              backgroundColor: "var(--color-border, #333)",
-              margin: "var(--space-xs, 4px) 0",
-            }}
-          />
-
-          {token && (
-            <button
-              className="pixel-button"
-              type="button"
-              onClick={() => navigate("profile")}
-              style={{ maxWidth: "280px", borderColor: "var(--color-accent-blue, #58a6ff)" }}
-            >
-              Profile & Cloud
-            </button>
-          )}
-
           <button
-            className="pixel-button"
+            className="pixel-button pixel-button--dark"
             type="button"
             disabled
-            style={{ maxWidth: "280px", opacity: 0.4 }}
             title="Coming soon"
           >
             Settings
           </button>
         </div>
 
-        {/* Version */}
-        <span
-          style={{
-            fontSize: "0.35rem",
-            color: "var(--color-text-dim)",
-            position: "absolute",
-            bottom: "var(--space-sm)",
-            right: "var(--space-sm)",
-          }}
-        >
-          v0.1.0
-        </span>
+        <p className="title-screen__fineprint">
+          Fan-made project. Pokemon names and sprites belong to their owners.
+        </p>
       </div>
     </div>
   );

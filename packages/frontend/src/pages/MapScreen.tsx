@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { SeededRNG, getSpeciesById, type MapGraph, type MapNode } from "@pokelike/core";
+import {
+  SeededRNG,
+  getSpeciesById,
+  type MapGraph,
+  type MapNode,
+} from "@pokelike/core";
 import { useGameStore } from "../stores/gameStore";
 import { useUIStore } from "../stores/uiStore";
 import { usePokedexStore } from "../stores/pokedexStore";
@@ -11,33 +16,19 @@ import {
   getMapName,
   getGymLeader,
   processNodeClick,
-  getGymBadgeName,
 } from "../game/helpers";
 
 /**
- * MapScreen — THE MAIN GAME SCREEN.
- *
- * Integrates:
- * - Overworld map with navigation
- * - Team panel with current Pokemon
- * - Item bar with inventory
- * - Badge count display
- * - Info header with map name
- *
- * Handles node clicks by resolving the node type and navigating
- * to the appropriate sub-screen (battle, catch, item, etc).
+ * MapScreen - main run screen with route map, team, items, and progress.
  */
 export default function MapScreen() {
   const gameStore = useGameStore();
   const uiStore = useUIStore();
-
-  // Local map state
   const [mapGraph, setMapGraph] = useState<MapGraph | null>(null);
   const [rng] = useState(
     () => new SeededRNG(gameStore.runSeed ?? Date.now()),
   );
 
-  // Generate map on first load
   useEffect(() => {
     if (!mapGraph) {
       const graph = generateMap(
@@ -54,7 +45,55 @@ export default function MapScreen() {
     [gameStore.currentMapIndex],
   );
 
-  // Node click handler
+  const progress = useMemo(() => {
+    if (!mapGraph) return { visited: 0, total: 0 };
+    return {
+      visited: mapGraph.nodes.filter((node) => node.visited).length,
+      total: mapGraph.nodes.length,
+    };
+  }, [mapGraph]);
+
+  const markNodeVisited = useCallback(
+    (node: MapNode) => {
+      if (!mapGraph) return;
+
+      const updatedNodes = mapGraph.nodes.map((n) => {
+        if (n.id === node.id) {
+          return { ...n, visited: true };
+        }
+        return n;
+      });
+
+      const visitedIds = new Set(
+        updatedNodes
+          .filter((n) => n.visited || n.id === node.id)
+          .map((n) => n.id),
+      );
+
+      const newlyAccessible = new Set<string>();
+      for (const edge of mapGraph.edges) {
+        if (visitedIds.has(edge.from)) {
+          newlyAccessible.add(edge.to);
+        }
+      }
+
+      const finalNodes = updatedNodes.map((n) => {
+        if (
+          newlyAccessible.has(n.id) ||
+          n.type.toString() === "START" ||
+          n.id === node.id
+        ) {
+          return { ...n, accessible: true };
+        }
+        return n;
+      });
+
+      gameStore.setCurrentNode(node.id);
+      setMapGraph({ ...mapGraph, nodes: finalNodes });
+    },
+    [mapGraph, gameStore],
+  );
+
   const handleNodeClick = useCallback(
     (nodeId: string) => {
       if (!mapGraph) return;
@@ -63,12 +102,10 @@ export default function MapScreen() {
       if (!node || !node.accessible || node.visited) return;
 
       const resolution = processNodeClick(node, gameStore.currentMapIndex, rng);
-
       const pokedexStore = usePokedexStore.getState();
 
       switch (resolution.type) {
         case "battle": {
-          // Mark all enemy species as seen in the Pokédex
           for (const p of resolution.enemyTeam) {
             const entry = getSpeciesById(p.speciesId);
             if (entry) pokedexStore.markSeen(entry.pokedexNumber);
@@ -78,7 +115,6 @@ export default function MapScreen() {
           break;
         }
         case "catch": {
-          // Mark all encounter choices as seen in the Pokédex
           for (const p of resolution.choices) {
             const entry = getSpeciesById(p.speciesId);
             if (entry) pokedexStore.markSeen(entry.pokedexNumber);
@@ -95,63 +131,21 @@ export default function MapScreen() {
         case "heal": {
           gameStore.healTeam();
           markNodeVisited(node);
-          // Stay on map
           break;
         }
         case "nothing": {
-          // Just mark as visited and move on
           markNodeVisited(node);
           break;
         }
       }
     },
-    [mapGraph, gameStore, uiStore, rng],
+    [mapGraph, gameStore, uiStore, rng, markNodeVisited],
   );
 
-  const markNodeVisited = useCallback(
-    (node: MapNode) => {
-      if (!mapGraph) return;
-
-      // Mark the node as visited
-      const updatedNodes = mapGraph.nodes.map((n) => {
-        if (n.id === node.id) {
-          return { ...n, visited: true };
-        }
-        return n;
-      });
-
-      // Find the next layer of nodes and mark them accessible
-      const visitedIds = new Set(
-        updatedNodes.filter((n) => n.visited || n.id === node.id).map((n) => n.id),
-      );
-
-      const newlyAccessible = new Set<string>();
-      for (const edge of mapGraph.edges) {
-        // If the 'from' node is visited (or just got visited), make 'to' accessible
-        if (visitedIds.has(edge.from)) {
-          newlyAccessible.add(edge.to);
-        }
-      }
-
-      const finalNodes = updatedNodes.map((n) => {
-        if (newlyAccessible.has(n.id) || n.type.toString() === "START" || n.id === node.id) {
-          return { ...n, accessible: true };
-        }
-        return n;
-      });
-
-      gameStore.setCurrentNode(node.id);
-      setMapGraph({ ...mapGraph, nodes: finalNodes });
-    },
-    [mapGraph, gameStore],
-  );
-
-  // Save game periodically
   useEffect(() => {
     gameStore.saveGame();
   }, [gameStore.currentMapIndex, gameStore.team.length]);
 
-  // Handle healing team after visiting a PokeCenter
   const handleHealTeam = useCallback(() => {
     gameStore.healTeam();
   }, [gameStore]);
@@ -162,7 +156,7 @@ export default function MapScreen() {
 
   if (!mapGraph) {
     return (
-      <div className="screen map-screen">
+      <div className="screen map-screen route-screen">
         <div className="screen-content">
           <div className="placeholder">Generating map...</div>
         </div>
@@ -171,205 +165,69 @@ export default function MapScreen() {
   }
 
   return (
-    <div
-      className="screen map-screen"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--space-xs)",
-        padding: "var(--space-sm)",
-        overflow: "hidden",
-        height: "100dvh",
-      }}
-    >
-      {/* Info Header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "var(--space-xs) var(--space-sm)",
-          backgroundColor: "var(--color-bg-mid)",
-          border: "1px solid var(--color-text-dim)",
-          flexShrink: 0,
-        }}
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: "2px", minWidth: 0 }}>
-          <span
-            style={{
-              fontSize: "0.45rem",
-              color: "var(--color-gold)",
-              textTransform: "uppercase",
-              letterSpacing: "1px",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {getMapName(gameStore.currentMapIndex)}
+    <div className="screen map-screen route-screen">
+      <header className="map-screen__topbar">
+        <button
+          className="map-screen__tool-button"
+          type="button"
+          onClick={handleGoToTitle}
+        >
+          Menu
+        </button>
+
+        <div className="map-screen__route-copy">
+          <span className="map-screen__eyebrow">
+            Route {gameStore.currentMapIndex + 1}
           </span>
+          <h2>{getMapName(gameStore.currentMapIndex)}</h2>
           {gymLeader && (
-            <span
-              style={{
-                fontSize: "0.35rem",
-                color: "var(--color-text-secondary)",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              Leader: {gymLeader.name} ({gymLeader.title})
-            </span>
+            <p>
+              Leader: {gymLeader.name} / {gymLeader.title}
+            </p>
           )}
         </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "var(--space-xs)",
-            flexShrink: 0,
-          }}
+
+        <button
+          className="map-screen__tool-button map-screen__tool-button--heal"
+          type="button"
+          onClick={handleHealTeam}
         >
-          {/* Badge count */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "2px",
-              padding: "2px 6px",
-              backgroundColor: "var(--color-bg-dark)",
-              border: "1px solid var(--color-gold-dim)",
-            }}
-            title={`${gameStore.badges.length} badges`}
-          >
-            <span style={{ fontSize: "0.5rem", color: "var(--color-gold)" }}>★</span>
-            <span
-              style={{
-                fontSize: "0.4rem",
-                color: "var(--color-text-primary)",
-              }}
-            >
-              {gameStore.badges.length}/8
-            </span>
-          </div>
+          Heal
+        </button>
+      </header>
 
-          {/* Heal button */}
-          <button
-            type="button"
-            onClick={handleHealTeam}
-            style={{
-              background: "none",
-              border: "1px solid var(--color-accent-green)",
-              color: "var(--color-text-primary)",
-              fontSize: "0.4rem",
-              padding: "2px 6px",
-              cursor: "pointer",
-              fontFamily: "var(--font-pixel)",
-            }}
-            title="Heal team"
-            aria-label="Heal team"
-          >
-            +HP
-          </button>
-
-          {/* Menu button */}
-          <button
-            type="button"
-            onClick={handleGoToTitle}
-            style={{
-              background: "none",
-              border: "1px solid var(--color-text-dim)",
-              color: "var(--color-text-secondary)",
-              fontSize: "0.4rem",
-              padding: "2px 6px",
-              cursor: "pointer",
-              fontFamily: "var(--font-pixel)",
-            }}
-            title="Return to title"
-            aria-label="Return to title"
-          >
-            Menu
-          </button>
+      <section className="map-screen__stage" aria-label="Route map">
+        <div className="map-screen__stage-meta">
+          <span>Badges: {gameStore.badges.length}/8</span>
+          <span>
+            Nodes: {progress.visited}/{progress.total}
+          </span>
         </div>
-      </div>
-
-      {/* Map View */}
-      <div
-        className="map-container"
-        style={{ flex: 1, minHeight: 0, width: "100%" }}
-      >
         <MapView
           nodes={mapGraph.nodes}
           edges={mapGraph.edges}
           currentNodeId={gameStore.currentNodeId}
           onNodeClick={handleNodeClick}
         />
-      </div>
+      </section>
 
-      {/* HUD Bottom: Team + Items */}
-      <div
-        className="hud-bottom"
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "var(--space-xs)",
-          flexShrink: 0,
-          padding: 0,
-        }}
-      >
-        {/* Team Panel */}
-        <div
-          style={{
-            backgroundColor: "var(--color-bg-mid)",
-            border: "1px solid var(--color-text-dim)",
-            padding: "var(--space-xs)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "2px",
-            }}
-          >
-            <span
-              style={{
-                fontSize: "0.35rem",
-                color: "var(--color-text-dim)",
-                textTransform: "uppercase",
-                letterSpacing: "1px",
-              }}
-            >
-              Team ({gameStore.team.length}/6)
-            </span>
+      <section className="map-screen__dock" aria-label="Run status">
+        <div className="dock-panel dock-panel--team">
+          <div className="dock-panel__header">
+            <span>Team</span>
+            <span>{gameStore.team.length}/6</span>
           </div>
           <TeamPanel team={gameStore.team} compact />
         </div>
 
-        {/* Item Bar */}
-        <div
-          style={{
-            backgroundColor: "var(--color-bg-mid)",
-            border: "1px solid var(--color-text-dim)",
-            padding: "var(--space-xs)",
-          }}
-        >
-          <span
-            style={{
-              fontSize: "0.35rem",
-              color: "var(--color-text-dim)",
-              textTransform: "uppercase",
-              letterSpacing: "1px",
-              display: "block",
-              marginBottom: "2px",
-            }}
-          >
-            Items
-          </span>
+        <div className="dock-panel dock-panel--items">
+          <div className="dock-panel__header">
+            <span>Items</span>
+            <span>{gameStore.items.length}</span>
+          </div>
           <ItemBar items={gameStore.items} />
         </div>
-      </div>
+      </section>
     </div>
   );
 }
